@@ -1,2 +1,0 @@
-system_id,iteration_id,timestamp,exact_os_name,os_type,hardened_rules,hardened_rule_count,passed_audits,failed_audits,high_severity_failures,medium_severity_failures,low_severity_failures,hours_since_last_patch,critical_vulns,high_vulns,total_vulns,compliance_score,risk_label
-contributor-u20-iter-0001,1,2026-11-19T05:17:05.967613+00:00,Ubuntu 20.04 LTS,0,"5.3.2.3,6.2.3.5",2,68,158,80,42,36,612,32,48,158,26.08,1

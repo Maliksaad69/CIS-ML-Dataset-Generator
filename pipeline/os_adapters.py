@@ -183,7 +183,7 @@ class BaseOSAdapter:
             print(f"[!] Warning: Error during VM recreate lifecycle: {e}")
             return False
 
-    def degrade_vm(self) -> bool:
+    def degrade_vm(self, live: bool = True) -> bool:
         """
         Executes anti-hardening degradation on the VM, intentionally weakening its security
         posture so it starts with 0 passed CIS rules (true zero baseline).
@@ -196,8 +196,8 @@ class BaseOSAdapter:
         print(f"    Baseline natural passes reset: 0 rules (0.0% compliance starting baseline).")
         print("=" * 75)
         
-        # If live VM is running, execute degradation script inside VM
-        if self.is_vm_running():
+        # If live VM execution is requested and running, execute degradation script inside VM
+        if live and self.is_vm_running():
             return self._execute_live_degrade()
         return True
 
@@ -280,63 +280,75 @@ class Ubuntu20Adapter(BaseOSAdapter):
 
 class Ubuntu22Adapter(BaseOSAdapter):
     """
-    Adapter for Ubuntu 22.04 LTS Server.
+    Adapter for Ubuntu 22.04 LTS Server (Levels 1 + 2 Complete Benchmark: 186 rules).
     """
     def __init__(self):
         super().__init__("ubuntu_22.04")
         self.vagrant_dir = UBUNTU_22_DIR
         self._load_rules()
-        self.max_possible_penalty = 210.0
-        self.normal_risk_rule_range = (30, min(48, len(self.baseline_failing_rules)))
-        self.high_risk_rule_range = (3, 22)
+        self.max_possible_penalty = 637.5
+        self.normal_risk_rule_range = (80, min(140, len(self.baseline_failing_rules)))
+        self.high_risk_rule_range = (5, 65)
 
     def _load_rules(self):
-        df = pd.read_csv(SEVERITY_CSV_PATH)
-        u22_rules = df[df['os_version'] == 'ubuntu_22.04']['cis_id'].dropna().astype(str).unique().tolist()
-        if not u22_rules:
-            # Fallback to standard CIS 22.04 rule sequence
-            u22_rules = [f"1.1.{i}" for i in range(1, 20)] + [f"2.1.{i}" for i in range(1, 20)] + [f"5.1.{i}" for i in range(1, 20)]
-        self.all_rules = sorted(u22_rules)
-        # 20% natural passes on fresh Ubuntu 22.04
+        l1_path = UBUNTU_22_DIR / "CIS_Ubuntu_Linux_22.04_LTS_v3.0.0_L1_Server.audit"
+        l2_path = UBUNTU_22_DIR / "CIS_Ubuntu_Linux_22.04_LTS_v3.0.0_L2_Server.audit"
+        self.auditor_mgr = CISAuditorManager(audit_l1_path=l1_path, audit_l2_path=l2_path)
+        self.all_rules = self.auditor_mgr.get_all_rule_ids()
+        # ~20% natural passes on fresh clean Ubuntu 22.04 server
         rng = random.Random(2204)
-        nat_count = max(4, int(len(self.all_rules) * 0.20))
+        nat_count = max(10, int(len(self.all_rules) * 0.20))
         self.baseline_natural_passes = set(rng.sample(self.all_rules, nat_count))
         self.baseline_failing_rules = sorted(list(set(self.all_rules) - self.baseline_natural_passes))
 
     def apply_hardening_live(self, selected_rules: List[str]) -> bool:
         if not self.is_vm_running():
             return False
-        # Update defaults/main.yml or invoke ansible
-        return True
+        tags = [f"rule_{r.replace('.', '_')}" for r in selected_rules]
+        cmd = ["vagrant", "provision", "--provision-with", "ansible"]
+        try:
+            env = get_safe_env()
+            env["ANSIBLE_TAGS"] = ",".join(tags)
+            res = subprocess.run(cmd, cwd=str(self.vagrant_dir), capture_output=True, text=True, timeout=300, env=env)
+            return res.returncode == 0
+        except Exception:
+            return False
 
 
 class Ubuntu24Adapter(BaseOSAdapter):
     """
-    Adapter for Ubuntu 24.04 LTS Workstation/Server.
+    Adapter for Ubuntu 24.04 LTS Server (Levels 1 + 2 Complete Benchmark: 189 rules).
     """
     def __init__(self):
         super().__init__("ubuntu_24.04")
         self.vagrant_dir = UBUNTU_24_DIR
         self._load_rules()
-        self.max_possible_penalty = 260.0
-        self.normal_risk_rule_range = (38, min(58, len(self.baseline_failing_rules)))
-        self.high_risk_rule_range = (5, 26)
+        self.max_possible_penalty = 643.5
+        self.normal_risk_rule_range = (80, min(145, len(self.baseline_failing_rules)))
+        self.high_risk_rule_range = (5, 65)
 
     def _load_rules(self):
-        df = pd.read_csv(SEVERITY_CSV_PATH)
-        u24_rules = df[df['os_version'] == 'ubuntu_24.04']['cis_id'].dropna().astype(str).unique().tolist()
-        if not u24_rules:
-            u24_rules = [f"1.1.{i}" for i in range(1, 25)] + [f"2.2.{i}" for i in range(1, 25)] + [f"5.2.{i}" for i in range(1, 25)]
-        self.all_rules = sorted(u24_rules)
+        l1_path = UBUNTU_24_DIR / "CIS_Ubuntu_Linux_24.04_LTS_v2.0.0_L1_Server.audit"
+        l2_path = UBUNTU_24_DIR / "CIS_Ubuntu_Linux_24.04_LTS_v2.0.0_L2_Server.audit"
+        self.auditor_mgr = CISAuditorManager(audit_l1_path=l1_path, audit_l2_path=l2_path)
+        self.all_rules = self.auditor_mgr.get_all_rule_ids()
         rng = random.Random(2404)
-        nat_count = max(5, int(len(self.all_rules) * 0.22))
+        nat_count = max(10, int(len(self.all_rules) * 0.20))
         self.baseline_natural_passes = set(rng.sample(self.all_rules, nat_count))
         self.baseline_failing_rules = sorted(list(set(self.all_rules) - self.baseline_natural_passes))
 
     def apply_hardening_live(self, selected_rules: List[str]) -> bool:
         if not self.is_vm_running():
             return False
-        return True
+        tags = [f"rule_{r.replace('.', '_')}" for r in selected_rules]
+        cmd = ["vagrant", "provision", "--provision-with", "ansible"]
+        try:
+            env = get_safe_env()
+            env["ANSIBLE_TAGS"] = ",".join(tags)
+            res = subprocess.run(cmd, cwd=str(self.vagrant_dir), capture_output=True, text=True, timeout=300, env=env)
+            return res.returncode == 0
+        except Exception:
+            return False
 
 
 class Windows10Adapter(BaseOSAdapter):

@@ -128,8 +128,8 @@ If you are a contributor assigned to a specific VM, use this quick reference tab
 | Target VM | Operating System ID | Hardener Directory | CIS Rules | Step 1: Boot VM | Step 2: Run Collection Node |
 |---|---|---|---|---|---|
 | **Ubuntu 20.04** | `ubuntu_20.04` | `Ansible-CIS-Hardener-for-Ubuntu-20-with-Vagrant-Setup` | 213 rules | `cd Ansible-CIS-Hardener-for-Ubuntu-20-with-Vagrant-Setup && vagrant up && cd ..` | `python collector_node.py --os ubuntu_20.04 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
-| **Ubuntu 22.04** | `ubuntu_22.04` | `Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup` | 60 rules | `cd Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup && vagrant up && cd ..` | `python collector_node.py --os ubuntu_22.04 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
-| **Ubuntu 24.04** | `ubuntu_24.04` | `Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup` | 74 rules | `cd Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup && vagrant up && cd ..` | `python collector_node.py --os ubuntu_24.04 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
+| **Ubuntu 22.04** | `ubuntu_22.04` | `Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup` | 186 rules | `cd Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup && vagrant up && cd ..` | `python collector_node.py --os ubuntu_22.04 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
+| **Ubuntu 24.04** | `ubuntu_24.04` | `Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup` | 189 rules | `cd Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup && vagrant up && cd ..` | `python collector_node.py --os ubuntu_24.04 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
 | **Windows 10** | `windows_10` | `Windows-10-CIS-Hardener` | 302 rules | `cd Windows-10-CIS-Hardener && vagrant up && cd ..` | `python collector_node.py --os windows_10 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
 | **Windows 11** | `windows_11` | `Windows-11-CIS-Hardener` | 336 rules | `cd Windows-11-CIS-Hardener && vagrant up && cd ..` | `python collector_node.py --os windows_11 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
 
@@ -175,7 +175,7 @@ When distributing work across team members, each person is assigned one of the 5
 
 #### 🟢 VM 2: Ubuntu 22.04 LTS Server
 * **Hardener Directory**: [Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup/](file:///D:/University/FYP%20CyberGuard/Dataset%20Generator/Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup)
-* **Benchmark Suite**: CIS Ubuntu 22.04 LTS STIG / Server Benchmark (60 rules)
+* **Benchmark Suite**: CIS Ubuntu 22.04 LTS v3.0.0 Levels 1 & 2 (186 rules, 812 checks)
 
 1. **Start the VM**:
    ```bash
@@ -198,7 +198,7 @@ When distributing work across team members, each person is assigned one of the 5
 
 #### 🟢 VM 3: Ubuntu 24.04 LTS Server
 * **Hardener Directory**: [Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup/](file:///D:/University/FYP%20CyberGuard/Dataset%20Generator/Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup)
-* **Benchmark Suite**: CIS Ubuntu 24.04 LTS v2.0.0 Server / Workstation (74 rules)
+* **Benchmark Suite**: CIS Ubuntu 24.04 LTS v2.0.0 Levels 1 & 2 (189 rules, 794 checks)
 
 1. **Start the VM**:
    ```bash
@@ -305,15 +305,12 @@ Once the collection run completes:
     3. **Cycle 2 (Snapshots 51 to 100)**: Progressively hardens the new VM slice by slice.
     4. **At Snapshot 100 (Clean Exit Guarantee)**: The target count is reached! The collector flushes all CSV and metadata files to disk and **exits cleanly without destroying the VM**.
 
-#### 3. Adaptive Trajectory Balancing (Eliminating the 90% High Risk Skew)
-* **Why data was previously unbalanced**:
-  * With 213 rules, a system only reaches Normal Risk (`risk_label = 0`, Score $\ge 70\%$) when $\ge 145$ rules are hardened.
-  * Adding 1–8 rules randomly each iteration took ~38 iterations to cross 70%, leaving snapshots 1–38 as High Risk and only snapshots 39–42 as Normal Risk (~90% class imbalance).
-* **The Adaptive Trajectory Solution**:
-  * The collector's **Adaptive Cumulative Trajectory Planner** dynamically divides each cycle into two equal halves:
-    1. **Phase 1 (High Risk Phase — First 50% of cycle)**: Paces rule hardening across the High Risk zone (Scores 0% to ~55%), ensuring that exactly the first 50% of snapshots are `risk_label = 1`.
-    2. **Phase 2 (Normal Risk Phase — Second 50% of cycle)**: Prioritizes a concentrated batch of Critical and High severity patches to safely cross the 70% threshold, pacing the remaining rules up to 100%, ensuring that the second 50% of snapshots are `risk_label = 0`.
-* **Guaranteed Outcome**: Any requested snapshot target (e.g. 20, 42, 50, 100 snapshots) yields **exactly 50% High Risk / 50% Normal Risk (1:1 balanced ratio)**.
+#### 3. Randomized Rule Application (2 to 8 Rules per Iteration)
+* **Rule Increment Guarantee**: In subsequent iterations (starting from iteration 2), the collector randomly selects **between 2 and 8 rules** (`rng.randint(2, 8)`) to apply to the VM.
+* **No Single-Rule Slowness**: Eliminates tedious single-rule applications (`+1 rule`) while ensuring realistic, varied configuration changes across successive snapshots.
+* **Balanced Trajectory Management**:
+  1. **Phase 1 (First 50% of cycle)**: Applies 2–8 rules randomly sampled across failing rules, pacing the system through High Risk (`Score < 70%`).
+  2. **Phase 2 (Second 50% of cycle)**: Applies 2–8 rules prioritizing Critical and High severity remediations, cleanly transitioning the VM into Normal Risk (`Score >= 70%`) until fully compliant.
 
 ---
 
@@ -501,8 +498,8 @@ $$\text{risk\_label} = \begin{cases} 1 & \text{if } \text{Compliance Score} < 70
 | OS Identifier | Exact Display Name | `os_type` | Hardener Role Directory | Benchmark Files |
 |---|---|---|---|---|
 | `ubuntu_20.04` | Ubuntu 20.04 LTS | `0` | `Ansible-CIS-Hardener-for-Ubuntu-20...` | Level 1 & Level 2 Server (213 rules) |
-| `ubuntu_22.04` | Ubuntu 22.04 LTS | `0` | `Ansible-CIS-Hardener-for-Ubuntu-22...` | Level 1 & Level 2 Server |
-| `ubuntu_24.04` | Ubuntu 24.04 LTS | `0` | `Ansible-CIS-Hardener-for-Ubuntu-24...` | Level 1 & Level 2 Server |
+| `ubuntu_22.04` | Ubuntu 22.04 LTS | `0` | `Ansible-CIS-Hardener-for-Ubuntu-22...` | Level 1 & Level 2 Server (186 rules) |
+| `ubuntu_24.04` | Ubuntu 24.04 LTS | `0` | `Ansible-CIS-Hardener-for-Ubuntu-24...` | Level 1 & Level 2 Server (189 rules) |
 | `windows_10` | Windows 10 Enterprise | `1` | `Windows-10-CIS-Hardener` | Enterprise Level 1 & Level 2 (302 rules) |
 | `windows_11` | Windows 11 Enterprise | `1` | `Windows-11-CIS-Hardener` | Enterprise Level 1 & Level 2 (336 rules) |
 

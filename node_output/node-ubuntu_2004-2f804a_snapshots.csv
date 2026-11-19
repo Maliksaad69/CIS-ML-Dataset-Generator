@@ -1,3 +1,0 @@
-system_id,iteration_id,timestamp,exact_os_name,os_type,hardened_rules,hardened_rule_count,passed_audits,failed_audits,high_severity_failures,medium_severity_failures,low_severity_failures,hours_since_last_patch,critical_vulns,high_vulns,total_vulns,compliance_score,risk_label
-node-ubuntu_2004-2f804a-iter-0001,1,2026-11-19T07:32:47.306718+00:00,Ubuntu 20.04 LTS,0,"1.1.2.3.3,1.1.2.4.1,7.2.4",3,69,157,80,42,35,497,32,48,157,26.69,1
-node-ubuntu_2004-2f804a-iter-0002,2,2026-11-19T07:34:24.232850+00:00,Ubuntu 20.04 LTS,0,"1.1.2.3.3,1.1.2.4.1,1.5.4,6.3.1.4,6.3.4.7,7.2.4",6,72,154,80,40,34,684,32,48,154,27.43,1

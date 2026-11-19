@@ -71,8 +71,6 @@ class CollectionNodeWorker:
         if vagrant_dir:
             self.adapter.vagrant_dir = Path(vagrant_dir)
         self.degrade = degrade
-        if self.degrade:
-            self.adapter.degrade_vm()
         self.node_id = node_id or f"node-{os_id.replace('.', '')}-{uuid.uuid4().hex[:6]}"
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -99,13 +97,8 @@ class CollectionNodeWorker:
         else:
             self.live_mode = False
 
-        # If running on live VM and anti-hardening degradation is enabled,
-        # apply the unharden script to the live VM immediately at startup
-        if self.degrade and self.live_mode:
-            print("\n" + "=" * 75)
-            print("[*] LIVE ANTI-HARDENING: Applying unharden script to live VM at start...")
-            print("=" * 75)
-            self.adapter._execute_live_degrade()
+        if self.degrade:
+            self.adapter.degrade_vm(live=self.live_mode)
 
         # Output file paths
         self.csv_output_path = self.output_dir / f"{self.node_id}_snapshots.csv"
@@ -174,47 +167,42 @@ class CollectionNodeWorker:
             active_rules = selected_rules
             rules_to_apply = selected_rules
         else:
-            # In cumulative mode: Intelligent Balanced Trajectory Planner
-            # Guarantees exact 50% High Risk (<70) / 50% Normal Risk (>=70) balance across the cycle
+            # In cumulative mode: Randomly apply between 2-8 rules in each subsequent iteration
             cycle_len = max_snapshots if (max_snapshots > 0 and max_snapshots < self.lifecycle_iterations) else self.lifecycle_iterations
             step_in_cycle = ((self.iteration - 1) % cycle_len) + 1
-            N_high = max(1, cycle_len // 2)
-            N_norm = max(1, cycle_len - N_high)
-
-            high_min, high_max = self.adapter.get_high_risk_rule_range()
-            norm_min, norm_max = self.adapter.get_normal_risk_rule_range()
-            high_cap = max(1, high_max)
-            norm_start = max(high_cap + 1, norm_min)
+            mid_cycle = max(2, cycle_len // 2)
 
             if step_in_cycle == 1 and (self.degrade or self.just_recreated) and not self.cumulative_rules:
-                target_count = 0
-                self.just_recreated = False
-            elif step_in_cycle <= N_high:
-                target_count = max(1, int((step_in_cycle / N_high) * high_cap))
-            else:
-                norm_step = step_in_cycle - N_high
-                target_count = norm_start + int((norm_step / N_norm) * (len(self.adapter.all_rules) - norm_start))
-
-            needed = max(0, target_count - len(self.cumulative_rules))
-            remaining = [r for r in self.adapter.baseline_failing_rules if r not in self.cumulative_rules]
-
-            if step_in_cycle > N_high:
-                # During Normal Risk phase, prioritize remediating critical and high severity rules to guarantee score >= 70
-                def _rule_pri(r_id):
-                    sev = self.severity_mapper.get_severity(r_id, target_os=self.os_id)["severity"]
-                    return {"Critical": 4, "High": 3, "Medium": 2, "Low": 1}.get(sev, 0)
-                remaining.sort(key=_rule_pri, reverse=True)
-            else:
-                rng.shuffle(remaining)
-
-            if needed > 0 and remaining:
-                rules_to_apply = remaining[:needed]
-                self.cumulative_rules.update(rules_to_apply)
-            else:
+                # Baseline iteration: record unhardened state (0 rules applied)
                 rules_to_apply = []
+                self.just_recreated = False
+            else:
+                remaining = [r for r in self.adapter.baseline_failing_rules if r not in self.cumulative_rules]
+                if remaining:
+                    # Apply randomly between 2 and 8 rules each iteration
+                    if len(remaining) >= 2:
+                        k = rng.randint(2, min(8, len(remaining)))
+                    else:
+                        k = len(remaining)
+
+                    if step_in_cycle >= mid_cycle:
+                        # During the second half of the cycle, prioritize Critical & High severity fixes
+                        # to ensure balanced transition into Normal Risk (score >= 70)
+                        def _rule_pri(r_id):
+                            sev = self.severity_mapper.get_severity(r_id, target_os=self.os_id)["severity"]
+                            base_wt = {"Critical": 40, "High": 30, "Medium": 20, "Low": 10}.get(sev, 0)
+                            return base_wt + rng.random()
+                        remaining.sort(key=_rule_pri, reverse=True)
+                        rules_to_apply = remaining[:k]
+                    else:
+                        rules_to_apply = rng.sample(remaining, k)
+
+                    self.cumulative_rules.update(rules_to_apply)
+                else:
+                    rules_to_apply = []
 
             active_rules = sorted(list(self.cumulative_rules))
-            target_class = "normal" if step_in_cycle > N_high else "high"
+            target_class = "normal" if step_in_cycle >= mid_cycle else "high"
 
         # 2. Step 2: Apply Hardening (in live VM mode)
         if self.live_mode and rules_to_apply:
