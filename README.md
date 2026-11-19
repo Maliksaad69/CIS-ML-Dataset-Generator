@@ -121,6 +121,28 @@ Dataset Generator/
 
 ## 4. How to Run
 
+### Quick-Start Contributor Cheat Sheet
+
+If you are a contributor assigned to a specific VM, use this quick reference table to boot and collect your dataset in 2 commands:
+
+| Target VM | Operating System ID | Hardener Directory | CIS Rules | Step 1: Boot VM | Step 2: Run Collection Node |
+|---|---|---|---|---|---|
+| **Ubuntu 20.04** | `ubuntu_20.04` | `Ansible-CIS-Hardener-for-Ubuntu-20-with-Vagrant-Setup` | 213 rules | `cd Ansible-CIS-Hardener-for-Ubuntu-20-with-Vagrant-Setup && vagrant up && cd ..` | `python collector_node.py --os ubuntu_20.04 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
+| **Ubuntu 22.04** | `ubuntu_22.04` | `Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup` | 60 rules | `cd Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup && vagrant up && cd ..` | `python collector_node.py --os ubuntu_22.04 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
+| **Ubuntu 24.04** | `ubuntu_24.04` | `Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup` | 74 rules | `cd Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup && vagrant up && cd ..` | `python collector_node.py --os ubuntu_24.04 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
+| **Windows 10** | `windows_10` | `Windows-10-CIS-Hardener` | 302 rules | `cd Windows-10-CIS-Hardener && vagrant up && cd ..` | `python collector_node.py --os windows_10 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
+| **Windows 11** | `windows_11` | `Windows-11-CIS-Hardener` | 336 rules | `cd Windows-11-CIS-Hardener && vagrant up && cd ..` | `python collector_node.py --os windows_11 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade` |
+
+> [!TIP]
+> **What do the flags do?**
+> * `--mode live`: Directly provisions and audits the running Vagrant virtual machine.
+> * `--degrade`: **Option 3 Anti-Hardening Degradation**. Executes on boot to weaken the VM so it starts with **0 rules passed** and **0.00% compliance** instead of passing ~70 rules by default.
+> * `--snapshots 100`: Captures 100 balanced empirical snapshots.
+> * `--lifecycle-iterations 50`: Automatically destroys and recreates the VM after 50 snapshots when it reaches 100% compliance, resets back to 0 rules, and continues.
+> * `--node-id <custom_name>`: (Optional) Assigns a custom name for your output files (e.g., `--node-id node-ahmed-u20`).
+
+---
+
 ### Workflow A: Contributor Guide — Step-by-Step for Every VM
 
 When distributing work across team members, each person is assigned one of the 5 virtual machines below. Follow the exact instructions for your assigned VM:
@@ -128,7 +150,7 @@ When distributing work across team members, each person is assigned one of the 5
 ---
 
 #### 🟢 VM 1: Ubuntu 20.04 LTS Server
-* **Hardener Directory**: `Ansible-CIS-Hardener-for-Ubuntu-20-with-Vagrant-Setup/`
+* **Hardener Directory**: [Ansible-CIS-Hardener-for-Ubuntu-20-with-Vagrant-Setup/](file:///D:/University/FYP%20CyberGuard/Dataset%20Generator/Ansible-CIS-Hardener-for-Ubuntu-20-with-Vagrant-Setup)
 * **Benchmark Suite**: CIS Ubuntu 20.04 LTS v3.0.0 Levels 1 & 2 (213 rules, 864 checks)
 
 1. **Start the VM**:
@@ -137,20 +159,22 @@ When distributing work across team members, each person is assigned one of the 5
    vagrant up
    cd ..
    ```
-2. **Run Snapshot Collection**:
+2. **Run Snapshot Collection (Recommended: 100 Snapshots with 50-Iteration Lifecycle & Degradation)**:
    ```bash
-   # Standard clean baseline (~31% natural passes):
-   python collector_node.py --os ubuntu_20.04 --snapshots 20 --node-id node-ahmed-u20 --mode live
-
-   # Or with Anti-Hardening Degradation (starts at 0 rules passed / Option 3):
-   python collector_node.py --os ubuntu_20.04 --snapshots 42 --node-id node-ahmed-u20 --mode live --degrade
+   python collector_node.py --os ubuntu_20.04 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade --node-id node-ahmed-u20
    ```
-   *(Note: If running without VirtualBox/Vagrant in offline benchmark evaluation mode, simply omit `--mode live`).*
+   *(For a shorter 42-snapshot run without mid-cycle destruction: `python collector_node.py --os ubuntu_20.04 --snapshots 42 --mode live --degrade`)*.
+3. **When Finished**:
+   ```bash
+   cd Ansible-CIS-Hardener-for-Ubuntu-20-with-Vagrant-Setup
+   vagrant halt
+   cd ..
+   ```
 
 ---
 
 #### 🟢 VM 2: Ubuntu 22.04 LTS Server
-* **Hardener Directory**: `Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup/`
+* **Hardener Directory**: [Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup/](file:///D:/University/FYP%20CyberGuard/Dataset%20Generator/Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup)
 * **Benchmark Suite**: CIS Ubuntu 22.04 LTS STIG / Server Benchmark (60 rules)
 
 1. **Start the VM**:
@@ -161,17 +185,19 @@ When distributing work across team members, each person is assigned one of the 5
    ```
 2. **Run Snapshot Collection**:
    ```bash
-   # Standard clean baseline:
-   python collector_node.py --os ubuntu_22.04 --snapshots 20 --node-id node-bilal-u22 --mode live
-
-   # Or with Anti-Hardening Degradation (0 rules passed):
-   python collector_node.py --os ubuntu_22.04 --snapshots 42 --node-id node-bilal-u22 --mode live --degrade
+   python collector_node.py --os ubuntu_22.04 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade --node-id node-bilal-u22
+   ```
+3. **When Finished**:
+   ```bash
+   cd Ansible-CIS-Hardener-for-Ubuntu-22-with-Vagrant-Setup
+   vagrant halt
+   cd ..
    ```
 
 ---
 
 #### 🟢 VM 3: Ubuntu 24.04 LTS Server
-* **Hardener Directory**: `Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup/`
+* **Hardener Directory**: [Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup/](file:///D:/University/FYP%20CyberGuard/Dataset%20Generator/Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup)
 * **Benchmark Suite**: CIS Ubuntu 24.04 LTS v2.0.0 Server / Workstation (74 rules)
 
 1. **Start the VM**:
@@ -182,17 +208,19 @@ When distributing work across team members, each person is assigned one of the 5
    ```
 2. **Run Snapshot Collection**:
    ```bash
-   # Standard clean baseline:
-   python collector_node.py --os ubuntu_24.04 --snapshots 20 --node-id node-saad-u24 --mode live
-
-   # Or with Anti-Hardening Degradation (0 rules passed):
-   python collector_node.py --os ubuntu_24.04 --snapshots 42 --node-id node-saad-u24 --mode live --degrade
+   python collector_node.py --os ubuntu_24.04 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade --node-id node-saad-u24
+   ```
+3. **When Finished**:
+   ```bash
+   cd Ansible-CIS-Hardener-for-Ubuntu-24-with-Vagrant-Setup
+   vagrant halt
+   cd ..
    ```
 
 ---
 
 #### 🔵 VM 4: Windows 10 Enterprise
-* **Hardener Directory**: `Windows-10-CIS-Hardener/`
+* **Hardener Directory**: [Windows-10-CIS-Hardener/](file:///D:/University/FYP%20CyberGuard/Dataset%20Generator/Windows-10-CIS-Hardener)
 * **Benchmark Suite**: CIS Microsoft Windows 10 Enterprise v5.0.0 Levels 1 & 2 (302 rules)
 
 1. **Start the VM**:
@@ -203,17 +231,19 @@ When distributing work across team members, each person is assigned one of the 5
    ```
 2. **Run Snapshot Collection**:
    ```bash
-   # Standard clean baseline:
-   python collector_node.py --os windows_10 --snapshots 20 --node-id node-dawood-w10 --mode live
-
-   # Or with Anti-Hardening Degradation (0 rules passed):
-   python collector_node.py --os windows_10 --snapshots 42 --node-id node-dawood-w10 --mode live --degrade
+   python collector_node.py --os windows_10 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade --node-id node-dawood-w10
+   ```
+3. **When Finished**:
+   ```bash
+   cd Windows-10-CIS-Hardener
+   vagrant halt
+   cd ..
    ```
 
 ---
 
 #### 🔵 VM 5: Windows 11 Enterprise
-* **Hardener Directory**: `Windows-11-CIS-Hardener/`
+* **Hardener Directory**: [Windows-11-CIS-Hardener/](file:///D:/University/FYP%20CyberGuard/Dataset%20Generator/Windows-11-CIS-Hardener)
 * **Benchmark Suite**: CIS Microsoft Windows 11 Enterprise / Intune Benchmark (336 rules)
 
 1. **Start the VM**:
@@ -224,92 +254,113 @@ When distributing work across team members, each person is assigned one of the 5
    ```
 2. **Run Snapshot Collection**:
    ```bash
-   # Standard clean baseline:
-   python collector_node.py --os windows_11 --snapshots 20 --node-id node-hamza-w11 --mode live
-
-   # Or with Anti-Hardening Degradation (0 rules passed):
-   python collector_node.py --os windows_11 --snapshots 42 --node-id node-hamza-w11 --mode live --degrade
+   python collector_node.py --os windows_11 --snapshots 100 --lifecycle-iterations 50 --mode live --degrade --node-id node-hamza-w11
+   ```
+3. **When Finished**:
+   ```bash
+   cd Windows-11-CIS-Hardener
+   vagrant halt
+   cd ..
    ```
 
 ---
 
 #### 📤 Contributor Output & Deliverable
 Once the collection run completes:
-1. Two output files will be saved in `node_output/`:
+1. Two output files will be automatically generated in `node_output/`:
    - `node_output/<node-id>_snapshots.csv` (contains the audited dataset rows)
-   - `node_output/<node-id>_metadata.json` (contains the exact rule IDs and audit trace)
-2. Send `<node-id>_snapshots.csv` to the project leader.
-3. The project leader drops all contributor CSVs into `node_output/` and merges them with:
+   - `node_output/<node-id>_metadata.json` (contains the exact rule IDs, seeds, and audit trace)
+2. Send `<node-id>_snapshots.csv` and `<node-id>_metadata.json` to the project leader.
+3. The project leader drops all contributor files into `node_output/` and merges them into the master datasets with:
    ```bash
    python run_pipeline.py --merge
    ```
 
 ---
 
-#### VM Isolation, Snapshot Count & Lifecycle Modes
+### Core Mechanics & Behavioral Guarantees
 
-1. **Defining Any Number of Snapshots (`--snapshots N` or `-n N`)**:
-   - You can choose any number of snapshots for your session (e.g. `--snapshots 10`, `--snapshots 20`, `--snapshots 42`, `--snapshots 100`).
-   - **Immediate Session Completion**: As soon as the requested `N` snapshots are captured, the worker **immediately finishes**, flushes the CSV and metadata JSON to disk, prints the final session summary, and exits back to your terminal prompt.
-   - It will **never** destroy or recreate the VM on your final requested snapshot.
+#### 1. Startup Unhardening (`--degrade` / Option 3 — True Zero Baseline)
+* **Question: Does it apply the unhardening script at the start?**
+  * **YES, GUARANTEED.** As soon as the collector connects to or starts the live VM, it immediately runs the unhardening script (`degrade_vm.sh` / `degrade_linux.sh` on Linux, `degrade_windows.ps1` on Windows) **before snapshot 1 is recorded**.
+* **Why this is critical**: A clean, pristine Linux or Windows VM naturally passes ~70 CIS rules right out of the box because many obsolete services (e.g. telnet, rsh, NIS) are not installed.
+* **Result of `--degrade`**:
+  * Injects known vulnerabilities, disables firewalls/audit daemons, and relaxes permissions.
+  * Snapshot 1 baseline starts at:
+    - `passed_audits = 0`
+    - `failed_audits = Total Benchmark Rules` (e.g. 213 on Ubuntu 20.04)
+    - `compliance_score = 0.00%`
+    - `risk_label = 1 (High Risk)`
 
-2. **Cumulative Hardening & The 55-Iteration VM Lifecycle (Default)**:
-   - Command: `python collector_node.py --os <os_id> --snapshots 100 --mode live --degrade`
-   - Progressively accumulates hardening rules on the same VM across iterations.
-   - **How a Multi-Cycle Run Works (e.g. `--snapshots 100`)**:
-     - **Iterations 1 to 55 (Cycle 1)**: Starts at 0 rules passed (with `--degrade`), progressively hardening rules slice by slice.
-     - **At Iteration 55 (Automatic Lifecycle Reset)**: Because 45 snapshots remain to reach 100, the worker automatically:
-       1. Destroys the saturated VM: `vagrant destroy -f`
-       2. Boots a fresh VM instance: `vagrant up`
-       3. Re-runs the anti-hardening unharden script (`degrade_vm.sh` / `degrade_windows.ps1`) to degrade the VM back to 0 passed rules.
-       4. Resets the rule pool and initializes Cycle 2.
-     - **Iterations 56 to 100 (Cycle 2)**: Collects the remaining 45 snapshots, starting from the unhardened baseline and progressively hardening the new VM.
-     - **At Iteration 100 (Clean Finish)**: Upon capturing the 100th snapshot, the worker flushes all CSV and metadata files, displays the session summary, and **exits cleanly without destroying or rebuilding the VM**.
-   - **Configurable Threshold**: The default recreation threshold is 55 iterations, but you can set any interval with `--lifecycle-iterations <N>` (e.g. `--lifecycle-iterations 55`). If you request $\le 55$ snapshots (e.g. `--snapshots 50`), it finishes and exits at snapshot 50 without rebuilding the VM.
+#### 2. VM Lifecycle Rebuilds (`--snapshots 100 --lifecycle-iterations 50`)
+* **How multi-cycle execution works**:
+  * When cumulative hardening runs for many snapshots, the VM eventually becomes 100% compliant (~snapshot 45–50).
+  * To collect more snapshots without saturation:
+    1. **Cycle 1 (Snapshots 1 to 50)**: Progressively hardens the VM from 0% compliance to 100% compliance.
+    2. **At Snapshot 50 (Automatic Lifecycle Trigger)**: Because 50 snapshots remain to reach the target of 100, the worker automatically:
+       - Destroys the compliant VM: `vagrant destroy -f`
+       - Boots a fresh VM instance: `vagrant up`
+       - Re-applies the unharden script live to reset the new VM back to 0 passes.
+       - Refreshes the rule pool for Cycle 2.
+    3. **Cycle 2 (Snapshots 51 to 100)**: Progressively hardens the new VM slice by slice.
+    4. **At Snapshot 100 (Clean Exit Guarantee)**: The target count is reached! The collector flushes all CSV and metadata files to disk and **exits cleanly without destroying the VM**.
 
-3. **Anti-Hardening Degradation Mode (`--degrade` / Option 3 - True Zero Baseline)**:
-   - Command: `python collector_node.py --os ubuntu_20.04 --snapshots 42 --mode live --degrade`
-   - **Why this exists**: A pristine, out-of-the-box Ubuntu/Windows server naturally passes ~66 rules (because obsolete daemons like telnet/rsh/GUI are absent). If your research requires a **true zero baseline (0 rules passed at start)**, passing `--degrade` executes an anti-hardening script (`degrade_vm.sh` / `degrade_windows.ps1`) directly on the VM.
-   - **Baseline at Start**: `passed_audits = 0`, `hardened_rule_count = 0`, `failed_audits = 213`, `compliance_score = 0.00%`, `risk_label = 1 (High Risk)`.
-   - **Progressive Remediation**: Hardens progressively across iterations, climbing from 0.00% up toward 100% compliance.
-   - **Automatic Re-degradation**: If a multi-cycle run is executed (e.g. `--snapshots 84`), every freshly recreated VM is automatically degraded again so Cycle 2 also starts cleanly at 0 passes.
+#### 3. Adaptive Trajectory Balancing (Eliminating the 90% High Risk Skew)
+* **Why data was previously unbalanced**:
+  * With 213 rules, a system only reaches Normal Risk (`risk_label = 0`, Score $\ge 70\%$) when $\ge 145$ rules are hardened.
+  * Adding 1–8 rules randomly each iteration took ~38 iterations to cross 70%, leaving snapshots 1–38 as High Risk and only snapshots 39–42 as Normal Risk (~90% class imbalance).
+* **The Adaptive Trajectory Solution**:
+  * The collector's **Adaptive Cumulative Trajectory Planner** dynamically divides each cycle into two equal halves:
+    1. **Phase 1 (High Risk Phase — First 50% of cycle)**: Paces rule hardening across the High Risk zone (Scores 0% to ~55%), ensuring that exactly the first 50% of snapshots are `risk_label = 1`.
+    2. **Phase 2 (Normal Risk Phase — Second 50% of cycle)**: Prioritizes a concentrated batch of Critical and High severity patches to safely cross the 70% threshold, pacing the remaining rules up to 100%, ensuring that the second 50% of snapshots are `risk_label = 0`.
+* **Guaranteed Outcome**: Any requested snapshot target (e.g. 20, 42, 50, 100 snapshots) yields **exactly 50% High Risk / 50% Normal Risk (1:1 balanced ratio)**.
 
-4. **Clean Reset Mode (`--reset`)**:
-   - Command: `python collector_node.py --os <os_id> --snapshots 20 --reset`
-   - Automatically runs `vagrant snapshot restore clean_baseline --no-provision` before each snapshot for independent, isolated baseline experiments.
-
-#### Why Active Adaptive Balancing Matters
-In fresh or degraded systems, baseline compliance scores are naturally low (< 35), which would produce an 85–90% skew towards High Risk if rules are added in small random increments. 
-
-To eliminate class imbalance in both clean reset mode and cumulative mode:
-* **In Clean Reset Mode (`--reset`)**: The adaptive feedback controller strictly alternates rule sample sizes between High Risk ranges and Normal Risk ranges to maintain exact 50/50 balance.
-* **In Cumulative Hardening Mode**: The **Adaptive Cumulative Trajectory Planner** partitions each collection cycle into two equal halves:
-  1. **Phase 1 (High Risk Phase - First 50% of cycle)**: Paces rule hardening across the High Risk zone (Scores 0% to ~55%), guaranteeing that the first half of snapshots are `risk_label = 1`.
-  2. **Phase 2 (Normal Risk Phase - Second 50% of cycle)**: Applies a prioritizing slice of critical/high rules to cross into Normal Risk (Score $\ge 70\%$), pacing the remaining rules up to 100%, guaranteeing that the second half of snapshots are `risk_label = 0`.
-* **Result**: Any collection run (e.g. 20, 42, 50, 100 snapshots) achieves a **50% High Risk / 50% Normal Risk balance (1:1 ratio)**!
+---
 
 #### Real-time Progress Display
 ```text
 ===========================================================================
-CYBERGUARD CIS DATASET GENERATION NODE - [NODE-AHMED-U20]
+[*] LIVE ANTI-HARDENING: Applying unharden script to live VM at start...
+[*] Executing live Anti-Hardening degradation script inside 'Ansible-CIS-Hardener-for-Ubuntu-20-with-Vagrant-Setup'...
+[✓] Live VM successfully degraded to vulnerable baseline!
+===========================================================================
+CYBERGUARD CIS DATASET GENERATION NODE - [NODE-UBUNTU_2004-50B3AB]
 ===========================================================================
   Target OS             : Ubuntu 20.04 LTS (ID: ubuntu_20.04, Type: 0)
-  Execution Mode        : [LIVE VM PROVISIONING] or [BENCHMARK EVALUATION]
+  Execution Mode        : [LIVE VM PROVISIONING]
+  Connected VM Folder   : Ansible-CIS-Hardener-for-Ubuntu-20-with-Vagrant-Setup
   VM Isolation Mode     : [CUMULATIVE PROGRESSIVE HARDENING]
-  Benchmark Rules Pool  : 213 total rules (160 baseline failing)
+  VM Lifecycle Reset    : Every 50 iterations ('vagrant destroy -f' & 'vagrant up')
+  Vulnerability Baseline: [ANTI-HARDENING DEGRADED (0 passed rules at start)]
+  Benchmark Rules Pool  : 213 total rules (213 baseline failing)
   Adaptive Balancing    : Active (Targeting 50% High Risk / 50% Normal Risk)
   Snapshots Requested   : 20
-  Output CSV            : ./node_output/node-ahmed-u20_snapshots.csv
-  Output Metadata JSON  : ./node_output/node-ahmed-u20_metadata.json
+  Output CSV            : ./node_output/node-ubuntu_2004-50b3ab_snapshots.csv
+  Output Metadata JSON  : ./node_output/node-ubuntu_2004-50b3ab_metadata.json
 ===========================================================================
 
 [*] Starting active collection loop...
 
-[001] Ubuntu 20.04 LTS | Hardened:   6 rules | Audits:  72 P / 154 F | Score: 27.43 -> HIGH RISK (1) | Balance: High= 1 (100.0%) Norm= 0 ( 0.0%)
-[002] Ubuntu 20.04 LTS | Hardened:  18 rules | Audits:  84 P / 142 F | Score: 36.10 -> HIGH RISK (1) | Balance: High= 2 (100.0%) Norm= 0 ( 0.0%)
-[003] Ubuntu 20.04 LTS | Hardened:  88 rules | Audits: 154 P /  72 F | Score: 68.45 -> HIGH RISK (1) | Balance: High= 3 (100.0%) Norm= 0 ( 0.0%)
-[004] Ubuntu 20.04 LTS | Hardened: 132 rules | Audits: 198 P /  28 F | Score: 87.21 -> NORMAL (0)    | Balance: High= 3 ( 75.0%) Norm= 1 ( 25.0%)
+[001] Ubuntu 20.04 LTS | Hardened:   0 rules | Audits:   0 P / 213 F | Score:  0.00 -> HIGH RISK (1) | Balance: High= 1 (100.0%) Norm= 0 ( 0.0%)
+[002] Ubuntu 20.04 LTS | Hardened:  21 rules | Audits:  21 P / 192 F | Score:  9.59 -> HIGH RISK (1) | Balance: High= 2 (100.0%) Norm= 0 ( 0.0%)
+[003] Ubuntu 20.04 LTS | Hardened:  31 rules | Audits:  31 P / 182 F | Score: 15.74 -> HIGH RISK (1) | Balance: High= 3 (100.0%) Norm= 0 ( 0.0%)
 ...
+[010] Ubuntu 20.04 LTS | Hardened: 106 rules | Audits: 106 P / 107 F | Score: 51.35 -> HIGH RISK (1) | Balance: High=10 (100.0%) Norm= 0 ( 0.0%)
+[011] Ubuntu 20.04 LTS | Hardened: 145 rules | Audits: 145 P /  68 F | Score: 75.34 -> NORMAL (0)    | Balance: High=10 (90.9%) Norm= 1 ( 9.1%)
+[012] Ubuntu 20.04 LTS | Hardened: 153 rules | Audits: 153 P /  60 F | Score: 80.26 -> NORMAL (0)    | Balance: High=10 (83.3%) Norm= 2 (16.7%)
+...
+[019] Ubuntu 20.04 LTS | Hardened: 205 rules | Audits: 205 P /   8 F | Score: 95.08 -> NORMAL (0)    | Balance: High=10 (52.6%) Norm= 9 (47.4%)
+[020] Ubuntu 20.04 LTS | Hardened: 213 rules | Audits: 213 P /   0 F | Score: 100.00 -> NORMAL (0)    | Balance: High=10 (50.0%) Norm=10 (50.0%)
+
+===========================================================================
+COLLECTION SESSION SUMMARY - [node-ubuntu_2004-50b3ab]
+===========================================================================
+  Exact OS Name         : Ubuntu 20.04 LTS
+  Total Snapshots Done  : 20
+  High Risk (1) Count   : 10 (50.0%)
+  Normal Risk (0) Count : 10 (50.0%)
+  Dataset Balanced?     : YES - PERFECTLY BALANCED
+===========================================================================
 ```
 
 ---

@@ -213,7 +213,7 @@ class BaseOSAdapter:
             else:
                 cmd = ["vagrant", "ssh", "-c", "sudo bash /vagrant/degrade_vm.sh"]
 
-            res = subprocess.run(cmd, cwd=str(self.vagrant_dir), capture_output=True, text=True, timeout=180)
+            res = subprocess.run(cmd, cwd=str(self.vagrant_dir), capture_output=True, text=True, timeout=180, env=get_safe_env())
             if res.returncode == 0:
                 print(f"[✓] Live VM successfully degraded to vulnerable baseline!")
                 return True
@@ -419,4 +419,14 @@ def get_os_adapter(os_identifier: str) -> BaseOSAdapter:
         key = "windows_10"
         if key not in _ADAPTER_CACHE:
             _ADAPTER_CACHE[key] = Windows10Adapter()
-        return _ADAPTER_
+        return _ADAPTER_CACHE[key]
+    elif "win11" in clean_id or "windows_11" in clean_id or "windows11" in clean_id:
+        key = "windows_11"
+        if key not in _ADAPTER_CACHE:
+            _ADAPTER_CACHE[key] = Windows11Adapter()
+        return _ADAPTER_CACHE[key]
+    else:
+        key = "ubuntu_20.04"
+        if key not in _ADAPTER_CACHE:
+            _ADAPTER_CACHE[key] = Ubuntu20Adapter()
+        return _ADAPTER_CACHE[key]

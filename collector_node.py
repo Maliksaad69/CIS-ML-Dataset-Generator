@@ -99,6 +99,14 @@ class CollectionNodeWorker:
         else:
             self.live_mode = False
 
+        # If running on live VM and anti-hardening degradation is enabled,
+        # apply the unharden script to the live VM immediately at startup
+        if self.degrade and self.live_mode:
+            print("\n" + "=" * 75)
+            print("[*] LIVE ANTI-HARDENING: Applying unharden script to live VM at start...")
+            print("=" * 75)
+            self.adapter._execute_live_degrade()
+
         # Output file paths
         self.csv_output_path = self.output_dir / f"{self.node_id}_snapshots.csv"
         self.json_output_path = self.output_dir / f"{self.node_id}_metadata.json"
