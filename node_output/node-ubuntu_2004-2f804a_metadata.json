@@ -1,0 +1,119 @@
+[
+  {
+    "iteration_id": 1,
+    "system_id": "node-ubuntu_2004-2f804a-iter-0001",
+    "node_id": "node-ubuntu_2004-2f804a",
+    "exact_os_name": "Ubuntu 20.04 LTS",
+    "os_type": 0,
+    "timestamp": "2026-11-19T07:32:47.306718+00:00",
+    "random_seed": 1795073577,
+    "target_class": "high",
+    "isolation_mode": "cumulative",
+    "active_rules": [
+      "1.1.2.3.3",
+      "1.1.2.4.1",
+      "7.2.4"
+    ],
+    "newly_applied_rules": [
+      "7.2.4",
+      "1.1.2.4.1",
+      "1.1.2.3.3"
+    ],
+    "hardened_rule_count": 3,
+    "audit_summary": {
+      "total_rules": 213,
+      "passed_count": 69,
+      "failed_count": 157
+    },
+    "severity_distribution": {
+      "Critical": 32,
+      "High": 48,
+      "Medium": 42,
+      "Low": 35
+    },
+    "penalties": {
+      "High_Critical": 400.0,
+      "Medium": 21.0,
+      "Low": 175.0,
+      "Total_Penalty": 596.0
+    },
+    "telemetry": {
+      "exact_os_name": "Ubuntu 20.04 LTS",
+      "os_type": 0,
+      "hours_since_last_patch": 497,
+      "critical_vulns": 32,
+      "high_vulns": 48,
+      "total_vulns": 157
+    },
+    "compliance_score": 26.69,
+    "risk_label": 1,
+    "running_balance": {
+      "total": 1,
+      "high_risk_count": 1,
+      "normal_risk_count": 0,
+      "high_risk_pct": 100.0,
+      "normal_risk_pct": 0.0,
+      "is_balanced": true
+    }
+  },
+  {
+    "iteration_id": 2,
+    "system_id": "node-ubuntu_2004-2f804a-iter-0002",
+    "node_id": "node-ubuntu_2004-2f804a",
+    "exact_os_name": "Ubuntu 20.04 LTS",
+    "os_type": 0,
+    "timestamp": "2026-11-19T07:34:24.232850+00:00",
+    "random_seed": 1795073594,
+    "target_class": "high",
+    "isolation_mode": "cumulative",
+    "active_rules": [
+      "1.1.2.3.3",
+      "1.1.2.4.1",
+      "1.5.4",
+      "6.3.1.4",
+      "6.3.4.7",
+      "7.2.4"
+    ],
+    "newly_applied_rules": [
+      "6.3.4.7",
+      "1.5.4",
+      "6.3.1.4"
+    ],
+    "hardened_rule_count": 6,
+    "audit_summary": {
+      "total_rules": 213,
+      "passed_count": 72,
+      "failed_count": 154
+    },
+    "severity_distribution": {
+      "Critical": 32,
+      "High": 48,
+      "Medium": 40,
+      "Low": 34
+    },
+    "penalties": {
+      "High_Critical": 400.0,
+      "Medium": 20.0,
+      "Low": 170.0,
+      "Total_Penalty": 590.0
+    },
+    "telemetry": {
+      "exact_os_name": "Ubuntu 20.04 LTS",
+      "os_type": 0,
+      "hours_since_last_patch": 684,
+      "critical_vulns": 32,
+      "high_vulns": 48,
+      "total_vulns": 154
+    },
+    "compliance_score": 27.43,
+    "risk_label": 1,
+    "running_balance": {
+      "total": 2,
+      "high_risk_count": 2,
+      "normal_risk_count": 0,
+      "high_risk_pct": 100.0,
+      "normal_risk_pct": 0.0,
+      "is_balanced": false
+    }
+  }
+]

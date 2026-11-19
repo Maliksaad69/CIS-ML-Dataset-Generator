@@ -1,0 +1,25 @@
+system_id,timestamp,exact_os_name,failed_audits,passed_audits,high_severity_failures,medium_severity_failures,low_severity_failures,hours_since_last_patch,critical_vulns,high_vulns,total_vulns,compliance_score,risk_label
+ubuntu-vm-persistent-01,2026-11-01T09:00:00,Ubuntu 20.04 LTS,35,178,19,10,6,120,6,13,35,84.01,0
+ubuntu-vm-persistent-01,2026-11-15T09:00:00,Ubuntu 20.04 LTS,55,158,27,15,13,456,7,20,55,74.48,0
+ubuntu-vm-persistent-01,2026-11-29T09:00:00,Ubuntu 20.04 LTS,73,140,33,23,17,792,9,24,73,67.84,1
+ubuntu-vm-persistent-01,2026-12-13T09:00:00,Ubuntu 20.04 LTS,89,124,42,26,21,1128,14,28,89,59.66,1
+ubuntu-vm-persistent-01,2026-12-27T09:00:00,Ubuntu 20.04 LTS,106,107,48,31,27,1464,19,29,106,51.97,1
+ubuntu-vm-persistent-01,2027-01-10T09:00:00,Ubuntu 20.04 LTS,126,87,61,38,27,1800,25,36,126,43.54,1
+ubuntu-vm-persistent-02,2026-11-04T09:00:00,Ubuntu 20.04 LTS,125,88,65,35,25,1440,25,40,125,42.5,1
+ubuntu-vm-persistent-02,2026-11-18T09:00:00,Ubuntu 20.04 LTS,105,108,57,29,19,1001,23,34,105,51.48,1
+ubuntu-vm-persistent-02,2026-12-02T09:00:00,Ubuntu 20.04 LTS,84,129,48,21,15,526,18,30,84,59.96,1
+ubuntu-vm-persistent-02,2026-12-16T09:00:00,Ubuntu 20.04 LTS,64,149,34,18,12,122,13,21,64,70.6,0
+ubuntu-vm-persistent-02,2026-12-30T09:00:00,Ubuntu 20.04 LTS,45,168,27,11,7,48,13,14,45,78.41,0
+ubuntu-vm-persistent-02,2027-01-13T09:00:00,Ubuntu 20.04 LTS,23,190,16,5,2,48,9,7,23,88.62,0
+ubuntu-vm-persistent-03,2026-11-07T09:00:00,Ubuntu 20.04 LTS,35,178,15,8,12,120,7,8,35,82.9,0
+ubuntu-vm-persistent-03,2026-11-21T09:00:00,Ubuntu 20.04 LTS,52,161,22,13,17,456,11,11,52,75.22,0
+ubuntu-vm-persistent-03,2026-12-05T09:00:00,Ubuntu 20.04 LTS,67,146,30,17,20,792,14,16,67,68.2,1
+ubuntu-vm-persistent-03,2026-12-19T09:00:00,Ubuntu 20.04 LTS,87,126,40,23,24,1128,17,23,87,59.23,1
+ubuntu-vm-persistent-03,2027-01-02T09:00:00,Ubuntu 20.04 LTS,101,112,46,28,27,1464,19,27,101,53.38,1
+ubuntu-vm-persistent-03,2027-01-16T09:00:00,Ubuntu 20.04 LTS,120,93,56,33,31,1800,26,30,120,44.46,1
+ubuntu-vm-persistent-04,2026-11-10T09:00:00,Ubuntu 20.04 LTS,125,88,64,36,25,1440,23,41,125,43.05,1
+ubuntu-vm-persistent-04,2026-11-24T09:00:00,Ubuntu 20.04 LTS,106,107,54,31,21,1111,18,36,106,51.97,1
+ubuntu-vm-persistent-04,2026-12-08T09:00:00,Ubuntu 20.04 LTS,86,127,43,25,18,649,13,30,86,60.95,1
+ubuntu-vm-persistent-04,2026-12-22T09:00:00,Ubuntu 20.04 LTS,64,149,32,17,15,194,10,22,64,70.05,0
+ubuntu-vm-persistent-04,2027-01-05T09:00:00,Ubuntu 20.04 LTS,43,170,22,13,8,48,8,14,43,80.75,0
+ubuntu-vm-persistent-04,2027-01-19T09:00:00,Ubuntu 20.04 LTS,22,191,10,7,5,48,4,6,22,90.34,0
